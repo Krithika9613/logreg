@@ -1,0 +1,72 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "edeecf4b-4743-49e8-a48d-90868eb43daf",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import streamlit as st\n",
+    "import pickle\n",
+    "import pandas as pd\n",
+    "\n",
+    "# Load trained statsmodels model\n",
+    "with open(\"logreg_rfe_model.pkl\", \"rb\") as f:\n",
+    "    model = pickle.load(f)\n",
+    "\n",
+    "# Define feature names used in training\n",
+    "feature_names = ['const', 'GRE Score', 'University Rating', 'CGPA']\n",
+    "\n",
+    "# Prepare input for prediction\n",
+    "def prepare_input(gre, rating, cgpa):\n",
+    "    data = [[1.0, gre, rating, cgpa]]\n",
+    "    return pd.DataFrame(data, columns=feature_names)\n",
+    "\n",
+    "# Set up Streamlit UI\n",
+    "st.title(\"📘 Admission Prediction App\")\n",
+    "st.markdown(\"This app predicts whether a student will be **admitted** or **rejected** based on GRE Score, University Rating, and CGPA.\")\n",
+    "\n",
+    "# Input fields\n",
+    "gre = st.number_input(\"GRE Score\", min_value=200, max_value=340, value=320)\n",
+    "rating = st.selectbox(\"University Rating\", [1, 2, 3, 4, 5], index=3)\n",
+    "cgpa = st.slider(\"CGPA\", min_value=0.0, max_value=10.0, step=0.1, value=8.5)\n",
+    "\n",
+    "# Predict button\n",
+    "if st.button(\"Predict Admission\"):\n",
+    "    input_df = prepare_input(gre, rating, cgpa)\n",
+    "    prob = model.predict(input_df)[0]\n",
+    "    label = \"Admit\" if prob >= 0.6 else \"Reject\"\n",
+    "    \n",
+    "    st.subheader(f\"🎯 Result: **{label}**\")\n",
+    "    st.write(f\"📊 Probability of Admission: **{prob:.4f}**\")\n",
+    "\n",
+    "    if label == \"Admit\":\n",
+    "        st.success(\"Congratulations! Based on the input, admission is likely.\")\n",
+    "    else:\n",
+    "        st.error(\"Unfortunately, admission is unlikely based on the input.\")\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python [conda env:base] *",
+   "language": "python",
+   "name": "conda-base-py"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
